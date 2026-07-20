@@ -2,7 +2,7 @@
 name: xl1-build
 description: Interactive planning wizard for new XL1 dApps. Refines a vague or exploratory build request into a concrete spec (archetype, patterns, network, multi-party roles, headless verification) before any scaffolding runs. Activates when the user wants to build, design, or plan something on XL1 but hasn't fully specified what — phrases like "I want to build something on XL1", "help me design a dApp", "what could I build", or any "build me X on XL1" prompt where X is under-specified. Do NOT activate when the user has already given a concrete, complete spec (e.g., names the archetype, the patterns, the network) — defer directly to [xl1-scaffold](../xl1-scaffold/SKILL.md) in that case.
 metadata:
-  version: 1.1.25 # x-release-please-version
+  version: 1.1.26 # x-release-please-version
 ---
 
 # XL1 Build Wizard
@@ -99,7 +99,7 @@ One final `AskUserQuestion` round, two questions:
 1. **Network target?** (Mainnet / Sequence / Local devnet)
 2. **Headless verification?** (Yes — I want a `.env` seed phrase and a Node verification script / No — browser-only)
 
-Headless verification is the cue that makes [xl1-scaffold](../xl1-scaffold/SKILL.md) wire up `GatewayBuilder.build(signer)` and run the script before reporting done — explained in [headless-verification](../xl1-patterns/headless-verification.md). When the user says yes, also ask which accounts hold funds (e.g., "accounts 0 and 1") so multi-party roles can be assigned.
+Headless verification is the cue that makes [xl1-scaffold](../xl1-scaffold/SKILL.md) wire up `GatewayBuilder.build(signer)` and run the script before reporting done — explained in [headless-verification](../xl1-testing/headless-testnet-verification.md). When the user says yes, also ask which accounts hold funds (e.g., "accounts 0 and 1") so multi-party roles can be assigned.
 
 ### Phase 4 — Synthesize the refined prompt and hand off
 
