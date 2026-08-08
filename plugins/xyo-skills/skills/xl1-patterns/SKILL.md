@@ -2,7 +2,7 @@
 name: xl1-patterns
 description: Prescriptive design patterns for XL1 dApps. Covers browser UX, chain data indexing, commit-reveal schemes, in-page datalakes, prediction markets, atomic exchange (multi-party escrow), inscription substrates, and fungible tokens. Activates when building application-level features on XL1 that require structured data access, multi-party fairness, atomic asset exchange, client-side chain queries, ownable artifacts, token protocols, or dApp UI conventions. (Testing and headless verification now live in the xl1-testing skill.)
 metadata:
-  version: 1.1.28 # x-release-please-version
+  version: 1.1.29 # x-release-please-version
 ---
 
 # XL1 Design Patterns
@@ -63,7 +63,7 @@ Read when your application needs persistent, transferable, owned objects on XL1 
 Read when building a fungible token on XL1 in the style of Bitcoin's BRC-20 — open ticker registration, capped mints, address-to-address transfers, off-chain ledger from on-chain events. Layered directly on the inscription substrate. Covers deploy/mint/transfer schemas, the dual-pass indexer, canonical ordering rules, and the deliberate divergence from BRC-20's two-step transfer.
 
 ### Headless verification → moved to [xl1-testing](../xl1-testing/SKILL.md)
-Headless dApp verification now lives in the **[xl1-testing](../xl1-testing/SKILL.md)** skill as [Headless testnet verification](../xl1-testing/headless-testnet-verification.md) — proving a dApp's chain interactions end-to-end via an in-process seed-phrase signer (`GatewayBuilder.build(signer)`), for agentic development, CI smoke tests, and regression scripts. It remains a required part of the [dApp Definition of Done](dapp-checklist.md) below.
+Headless dApp verification now lives in the **[xl1-testing](../xl1-testing/SKILL.md)** skill as [Headless testnet verification](../xl1-testing/headless-testnet-verification.md) — proving a dApp's chain interactions end-to-end via an in-process seed-phrase signer (`GatewayBuilder.buildRunner()`), for agentic development, CI smoke tests, and regression scripts. It remains a required part of the [dApp Definition of Done](dapp-checklist.md) below.
 
 ### [dApp Definition of Done](dapp-checklist.md)
 **REQUIRED before reporting any XL1 dApp work as complete.** Not optional, not "if you have time" — walk it explicitly and call out pass/fail per relevant section in your completion summary. The checklist enumerates the rules and anti-patterns documented across the skill stack (gateway usage, datalake setup, wallet integration, SDK-first compliance, payload design, indexer floor block, provider architecture, display conventions, commit-reveal correctness, settlement authorities, multi-party co-signing, headless verification). Sections marked "(if applicable)" can be skipped only when truly out of scope — state which and why.

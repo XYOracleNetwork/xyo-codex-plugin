@@ -15,7 +15,7 @@ description: >
   smoke-test an XL1 dApp or protocol change, run on-chain tests against a local chain
   or the Sequence testnet, run headless browser tests, or set up unattended / CI testing.
 metadata:
-  version: 1.1.28 # x-release-please-version
+  version: 1.1.29 # x-release-please-version
 ---
 
 # XL1 Testing
@@ -51,7 +51,7 @@ explicitly and deliberately opts into mainnet for a specific run.
 
 | You want to… | Use | Signer / actor |
 |---|---|---|
-| Prove a dApp's chain interactions work against a **live testnet**, in-process (agentic build, CI smoke test, regression) | **[Headless testnet verification](headless-testnet-verification.md)** | In-process seed-phrase signer via `GatewayBuilder.build(signer)` |
+| Prove a dApp's chain interactions work against a **live testnet**, in-process (agentic build, CI smoke test, regression) | **[Headless testnet verification](headless-testnet-verification.md)** | In-process seed-phrase signer via `GatewayBuilder.buildRunner()` |
 | Prove them against a **free, deterministic local chain** — offline, no funding step, fast (CI, TDD loops, multi-account flows) | **[Local dev-chain verification](local-chain.md)** | Local `xl1 start` chain + in-process signer (genesis-funded dev account) |
 | Test a local XL1 chain and an independently hosted **Aries data/object lake** together, without yet running a real reducer | **[Local chain + Aries data-lake fixture](local-chain-datalake.md)** | Direct `xl1` CLI + `aries dapp` CLI with the noop actor |
 | Test a complete local XL1 dApp backend: finalized-chain source, real reducer, coherent state/index publication, and anonymous verification | **[Full local XL1 dApp stack](local-dapp-stack.md)** | Direct `xl1` CLI + project-owned `aries-dapp-core` composition |
