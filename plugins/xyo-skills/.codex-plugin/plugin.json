@@ -1,7 +1,7 @@
 {
   "name": "xyo-skills",
-  "version": "1.1.30",
-  "description": "Full-stack agent skills for building dApps on the XL1 blockchain. Covers XYO primitives, XL1 chain operations, toolchain config, and prescriptive design patterns (commit-reveal, indexing, prediction markets).",
+  "version": "1.1.31",
+  "description": "XYO and XL1 agent skills for building dApps on the XL1 blockchain. Covers XYO primitives, XL1 chain operations, scaffold tooling, testing, and prescriptive design patterns. Requires companion ariestools-skills for xy-development and xy-toolchain.",
   "author": {
     "name": "XYO Foundation",
     "email": "support@xylabs.com",
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "XYO Skills",
     "shortDescription": "XL1 and XYO development skills.",
-    "longDescription": "A layered skill stack for building XL1 dApps and XYO protocol integrations, including scaffold tooling, design patterns, chain knowledge, XYO primitives, TypeScript toolchain guidance, and development workflow standards.",
+    "longDescription": "A layered skill stack for building XL1 dApps and XYO protocol integrations, including scaffold tooling, design patterns, chain knowledge, XYO primitives, and XL1 testing. Install ariestools-skills alongside this pack for TypeScript toolchain and development workflow standards.",
     "developerName": "XYO Foundation",
     "category": "Developer Tools",
     "capabilities": [
