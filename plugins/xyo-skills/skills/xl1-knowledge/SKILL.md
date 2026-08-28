@@ -2,7 +2,7 @@
 name: xl1-knowledge
 description: XL1 blockchain development (XYO Layer One). Covers the XL1 chain, datalakes, gateway (generic, browser, and Node — including FinalizedBlockStream), identity, and pointers to application substrates (Statement Graph, dapp-kit). Activates when building on XL1, working with @xyo-network/xl1-* packages, or developing blockchain-backed applications.
 metadata:
-  version: 1.1.31 # x-release-please-version
+  version: 1.1.32 # x-release-please-version
 ---
 
 # XL1 Blockchain Knowledge
@@ -20,6 +20,10 @@ XL1 builds on the full skill stack. When working on XL1 projects, also consult:
 - **[Development](../xy-development/SKILL.md)** — for coding conventions (TypeScript, Git, testing, workflow)
 
 When you need to look up exact type definitions, install the relevant `@xyo-network/xl1-*` package and read the TypeScript declarations at `dist/neutral/index.d.ts`. The [XL1 Protocol Yellow Paper](https://docs.xyo.network) provides the full protocol specification.
+
+## Payload schema and identity rules
+
+Before defining payloads or choosing identity/commitment hashes, read [Payload Schema Evolution and Identity](../xyo-knowledge/payload-schema-evolution.md). New schema names use strict ASCII segments without structural version suffixes; `$version` is validated metadata; root hashes are the application default. Preserve shipped protocol hash contracts and do not let an unauthenticated BoundWitness version select consensus or signature rules.
 
 ## Critical: Never Issue Raw RPC Calls
 
