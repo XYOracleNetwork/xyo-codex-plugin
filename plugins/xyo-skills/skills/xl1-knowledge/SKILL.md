@@ -2,7 +2,7 @@
 name: xl1-knowledge
 description: XL1 blockchain development (XYO Layer One). Covers the XL1 chain, datalakes, gateway (generic, browser, and Node — including FinalizedBlockStream), website integration via @xyo-network/xl1-browser-system and the REST-over-RPC transport rule, identity, and pointers to application substrates (Statement Graph, dapp-kit). Activates when building on XL1, integrating XL1 into a website, working with @xyo-network/xl1-* packages, or developing blockchain-backed applications.
 metadata:
-  version: 1.1.37 # x-release-please-version
+  version: 1.1.38 # x-release-please-version
 ---
 
 # XL1 Blockchain Knowledge
@@ -40,7 +40,7 @@ See [Gateway — Never Issue Raw RPC Calls](gateway.md#never-issue-raw-rpc-calls
 Read when working with XL1 blockchain concepts — blocks, transactions, fees, rewards, node types, or consensus. Covers the chain data model and how XL1 extends XYO's BoundWitness/Payload primitives.
 
 ### [Development on XL1](development.md)
-Read when building applications or services on XL1. Covers the Zod-first type pattern, Viewer/Runner architecture, providers, validation, and the SDK package structure.
+Read when building applications or services on XL1. Covers the Zod-first type pattern, Viewer/Runner architecture, providers (including `providerId` identity, `MissingProviderIdError`, and `UnknownProviderError` pins), validation, and the SDK package structure.
 
 ### [Identity & Wallets](identity.md)
 Read when creating a wallet or signer in XL1 backend code (Node services, indexers, CLIs, tests). Covers the canonical `generateXyoBaseWalletFromPhrase` + `derivePath('<index>')` pattern, the cross-environment compatibility guarantee with MetaMask and the XYO browser extension, and the rule that the result is an `AccountInstance`, which goes directly to `GatewayBuilder.account(...)` when a write-capable runner is needed.
