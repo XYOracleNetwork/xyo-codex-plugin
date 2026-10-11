@@ -17,7 +17,7 @@ const reactTemplateOverrides = {
         // import of Node's 'events' module from the wallet postMessage transport.
         // 'ajv' is a peer of @xyo-network/sdk-protocol-core — two levels below
         // @xyo-network/sdk, so expandWithPeers' one-level walk misses it and
-        // eslint's transitive ajv@6 would win resolution.
+        // ESLint's transitive ajv@6 would win resolution.
         extras: ['@emotion/react', '@emotion/styled', 'events', 'ajv'],
         // tsconfig-react extends tsconfig-dom extends tsconfig — both extras need
         // to be direct dev deps so the ESLint import resolver can walk the
@@ -34,11 +34,7 @@ const reactTemplateOverrides = {
             'vite-plugin-checker',
             'vite-plugin-svgr',
         ],
-        versions: {
-            '@mui/material': '^9',
-            '@mui/icons-material': '^9',
-            '@react-spring/web': '~10.0',
-        },
+        versions: { '@mui/material': '^9' },
     },
     tsconfig: {
         extends: '@ariestools/tsconfig-react',

@@ -37,9 +37,10 @@ depends on how you launch it (see [Block cadence](#block-cadence)). It uses
 simplified dev consensus (`minStake: 1`, `minCandidates: 1`) and built-in
 **insecure** wallets (see [Funding](#funding--none-needed)).
 
-It **is** good for: chain reads, transaction submission, transfers, payload/
-datalake round-trips, viewer behavior, multi-account app logic — the app-level
-surface a dApp exercises.
+It **is** good for: chain reads, transaction submission, transfers, on-chain
+payload round-trips, viewer behavior, multi-account app logic — the app-level
+surface a dApp exercises. It serves no XL1 `/dataLake`, so off-chain bodies
+have nowhere to land (see the [verify script notes](#verify-script)).
 
 It is **not** a substitute for Sequence validation:
 - No EVM staking-contract layer (that is the XYO team's internal `hardhat` test
@@ -76,8 +77,8 @@ The producer does not mint on a fixed clock. Every `blockProductionCheckInterval
 it checks for work and builds a block if transactions are pending; with nothing
 pending it emits an empty heartbeat block only once `heartbeatInterval` has
 passed since the head. The finalizer checks for candidates every
-`finalizationCheckInterval`. In `@xyo-network/xl1-cli` 5.4.1 the values depend
-on whether you launch with a config file:
+`finalizationCheckInterval`. In `@xyo-network/xl1-cli` 5.6.1 (unchanged since
+5.4.1) the values depend on whether you launch with a config file:
 
 | Launch | Producer check | Heartbeat | Finalizer check | Idle chain | A submitted transaction |
 |---|---|---|---|---|---|
@@ -163,11 +164,15 @@ Point the SDK at the local RPC. This is the same shape as headless testnet
 verification — read, sign, submit, confirm, read back — just against `localhost`.
 
 The gateway construction below is the 5.x SDK API. CLI and SDK versions move
-independently: this script was last run end-to-end against `@xyo-network/xl1-cli`
-**5.4.1** chains with `@xyo-network/xl1-sdk` **5.6.1**, and earlier against a
-globally installed CLI **4.4.0** with SDK **5.2.3** — read, a 1 XL1 transfer,
-`confirmSubmittedTransaction`, and the balance read-back all passed. A pre-5.0
-CLI does not require a pre-5.0 SDK construction.
+independently (current npm: `@xyo-network/xl1-cli` 5.6.1, `@xyo-network/xl1-sdk`
+5.8.x — same construction): this script was last run end-to-end against
+`@xyo-network/xl1-cli` **5.4.1** chains with `@xyo-network/xl1-sdk` **5.6.1**,
+and earlier against a globally installed CLI **4.4.0** with SDK **5.2.3** —
+read, a 1 XL1 transfer, `confirmSubmittedTransaction`, and the balance
+read-back all passed. A pre-5.0 CLI does not require a pre-5.0 SDK
+construction. Mind the engines: the CLI declares Node `>=24`, but
+`@xyo-network/xl1-sdk` (5.6.1 onward) declares `>=26`, so run the script on
+Node 26.
 
 ```ts
 import { GatewayBuilder } from '@xyo-network/xl1-sdk'
@@ -210,12 +215,18 @@ Notes:
   [Block cadence](#block-cadence): with a config file that sets the actors, a
   transaction can wait up to one 10 s producer check before it lands. The
   Sequence-tuned `10_000` delay is unnecessary locally.
-- The SDK also ships a `local` entry in `DefaultNetworks` (`http://localhost:8080/rpc`);
-  the explicit `.rpcUrl(...)` above is equivalent and self-documenting.
+- The SDK also ships a `local` entry in `DefaultNetworks` whose `url` is the
+  base `http://localhost:8080` — the RPC is `${url}/rpc`, the same
+  `http://localhost:8080/rpc` used above; the explicit `.rpcUrl(...)` is
+  equivalent and self-documenting.
 - The local `api` actor mounts only `/rpc`, `/rpc/indexed`, and probe routes —
-  there is no `/dataLake` route to point `.dataLakeEndpoint(...)` at. For local
-  datalake-backed reads, run the composed stack in
-  [local chain + Aries data store](local-chain-datalake.md) and use its endpoint.
+  there is no `/dataLake` route to point `.dataLakeEndpoint(...)` at, even though
+  `NetworkDataLakeUrls.local` names `http://localhost:8080/dataLake`. Leave the
+  endpoint off; the runner then stores no off-chain bodies, so assert on the
+  transaction and its on-chain payloads. The Aries `/data` bucket in
+  [local chain + Aries data store](local-chain-datalake.md) is a plain S3 object
+  store, not the XL1 REST datalake API (`/get/<hash>`, `/insert`), so it is not
+  a drop-in `.dataLakeEndpoint(...)` either.
 - Two different heights, both plain JS `number`s (branded `XL1BlockNumber`, not
   `bigint`): `viewer.block.currentBlockNumber()` is the **current** head,
   `viewer.finalization.headNumber()` is the **finalized** head. Finalization
@@ -255,7 +266,8 @@ and `/indexes`, with `localEndpoint` defaulting to `https://chain.aries.test:879
 (see [Browser Gateway — REST over RPC](../xl1-knowledge/gateway-browser.md#rest-over-rpc)).
 Against a bare `xl1 start` those reads have nothing to fetch.
 
-A working local recipe for `@xyo-network/xl1-cli` 5.4.1:
+A working local recipe for `@xyo-network/xl1-cli` 5.6.1 (it needs the
+chain-contract pin below):
 
 1. Serve the layout with `@ariestools/aries-chain-serve`
    (`pnpm add -D @ariestools/aries-chain-serve`), a dev-only S3-compatible
@@ -286,21 +298,30 @@ A working local recipe for `@xyo-network/xl1-cli` 5.4.1:
 
 Two traps:
 
-- Do **not** bind `"ChainContractViewer": { "provider": "SimpleChainContractViewer" }`,
-  as ariestools' `chain-serve-local-s3` `buildXl1Config` does. 5.4.1 exits at
-  startup with `UnknownProviderError: Provider "SimpleChainContractViewer" does
-  not satisfy capability "ChainContractViewer"`. Omit the binding. The CLI
-  bundle renames the class (5.5.0 emits `SimpleChainContractViewer$1 = class …`)
-  and SDKs up to 5.7.1 take the id from that name, so the pin matches nothing.
-  A CLI built on `@xyo-network/xl1-sdk` after 5.7.1 matches it through the
-  declared `providerId` (see
+- On `@xyo-network/xl1-cli` 5.6.x, **pin** the chain-contract viewer. Binding
+  `ChainStatePublishRunner` to an `s3` connection with a `finalizer` actor plans
+  `S3ChainStatePublishRunner`, which reads the chain-contract manifest; the node
+  then refuses to start unless `ChainContractViewer` is bound to an `evm-rpc`
+  connection or explicitly pinned to the in-memory stub. A dev chain has no EVM,
+  so add the pin, with no `connection`, to `providerBindings`:
+
+  ```json
+  "ChainContractViewer": { "provider": "SimpleChainContractViewer" }
+  ```
+
+  Without it, startup exits with `ChainContractViewer requires an evm-rpc-backed
+  binding when ChainStatePublishRunner is planned`. Historical note: through
+  5.5.0 the CLI bundle renamed the class (`SimpleChainContractViewer$1`), so this
+  pin failed with `UnknownProviderError` and the binding had to be omitted;
+  5.6.x matches it by a stable provider id (see
   [Provider identity](../xl1-knowledge/development.md#provider-identity)).
 - Restart chain-serve with every `xl1` boot. Its memory buckets outlive the
   chain, so a new chain publishing over the old objects serves a stale head,
   and the indexer fails with `Ceiling N exceeds source head M`.
 
-A reference config lives in the wallet-xl1-chrome repo at
-`packages/e2e/fixtures/local-chain/xl1.config.json` once that change lands.
+A reference config, run against `@xyo-network/xl1-cli` 5.6.1 and including the
+pin, lives in the `XYOracleNetwork/wallet-xl1-chrome` repo at
+`packages/e2e/fixtures/local-chain/xl1.config.json`.
 
 ## Teardown
 

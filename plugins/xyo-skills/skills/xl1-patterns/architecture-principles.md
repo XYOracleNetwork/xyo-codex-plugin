@@ -2,10 +2,12 @@
 
 **Read when designing, reviewing or migrating any XL1 dApp whose state matters to more than one party**: games, markets, auctions, registries, leaderboards. This page says what the architecture must guarantee, whether or not the dApp adopts `@xyo-network/dapp-kit*`. The mechanics live elsewhere:
 
-- The rest of this skill: the headless runtime, [application ports](application-ports.md), [effect journals](effects-and-recovery.md) and [hosting](hosting.md).
-- [xl1-patterns](../xl1-patterns/SKILL.md): anchoring paths, [indexing](../xl1-patterns/chain-data-indexing-protocol.md), [commit-reveal](../xl1-patterns/commit-reveal.md) and the [dApp Definition of Done](../xl1-patterns/dapp-checklist.md).
+- The rest of this skill, [xl1-patterns](SKILL.md): anchoring paths, [indexing](chain-data-indexing-protocol.md) and [commit-reveal](commit-reveal.md).
 - [xl1-knowledge](../xl1-knowledge/SKILL.md): the chain, gateways and datalakes.
 - [Payload schema evolution](../xyo-knowledge/payload-schema-evolution.md): schema names, `$version` and root hashes.
+- If adopting dapp-kit (Layer 6): [xl1-dapp-kit](../xl1-dapp-kit/SKILL.md) for the headless runtime, [application ports](../xl1-dapp-kit/application-ports.md), [effect journals](../xl1-dapp-kit/effects-and-recovery.md) and [hosting](../xl1-dapp-kit/hosting.md).
+
+The [dApp Definition of Done](../xl1-testing/dapp-checklist.md#architecture-principles-if-state-matters-to-more-than-one-party) in xl1-testing (Layer 7) checks these principles before dApp work is reported complete.
 
 **Maturity.** Principles 1–7 are owner direction. The elaboration, tables and examples were distilled from the Crypto Cards dApp and are still under review; the [open questions](#open-questions) are unsettled. Where a mechanism below depends on XL1 behavior that is not yet confirmed, the text says so.
 
@@ -55,13 +57,48 @@ flowchart TB
 | Term | Meaning on this page |
 | --- | --- |
 | Protocol | The written contract for the dApp's state data: schemas, authority, timing, ordering, derivation, failure handling and versioning. |
-| Engine | The UI-agnostic implementation of the protocol: validation, state derivation and action construction, behind injected I/O ports. |
+| Engine | The UI-agnostic implementation of the protocol: validation, state derivation and action construction, behind injected I/O ports. If adopting dapp-kit (Layer 6), its runtime form is the Dapp Engine (`launchDappEngine`) and the systems it owns (see [Vocabulary](../xl1-dapp-kit/vocabulary.md)). |
 | Evidence | Anchored payloads plus their bodies. The only input to state. |
 | Anchor | The finalized XL1 transaction that commits a payload hash, and the position `(block, transaction ordinal, payload ordinal)` it gives that payload. |
 | Datalake | A content-addressed body store: each key is the hash of its value. |
-| House | A protocol role: the account that signed and anchored the dApp's initialization payload. Named *house* rather than *host* because dapp-kit's *host* is the process, page or worker a runtime runs in. This page uses *host* only in that dapp-kit sense (see [Vocabulary](vocabulary.md)). |
+| House | A protocol role: the account that signed and anchored the dApp's initialization payload. Named *house* rather than *host* because a *host* is the process, page or worker a runtime runs in (dapp-kit's term). This page uses *host* only in that sense. |
 | Index | Derived, published data for fast reads. Rebuildable, replaceable and never authoritative. Also called a projection. |
 | Verifier | An implementation that derives state from evidence alone. |
+
+## Worker authority and coordination
+
+When designing worker roles, work discovery, concurrent attempts, recovery or
+coordination, consult the cross-cutting
+[ariestools-architecture](https://github.com/ariestools/ariestools-skills/blob/main/skills/ariestools-architecture/SKILL.md)
+skill. That link identifies its canonical source in the separate Aries Tools
+pack. Verify that the adopted pack revision contains the skill before claiming
+it was loaded. If it does not, read an accessible source revision containing
+it and report that revision; if no such source is accessible, record the
+limitation and apply the criteria here.
+
+Prefer eligible, autonomous, replaceable participants that discover unfinished
+work from durable evidence and reconcile outcomes under the written protocol.
+Wakes and gossip accelerate discovery; catch-up from durable evidence repairs
+missed signals. Define what concurrent attempts mean at the effect boundary:
+duplicate computation can be harmless while signing, sponsorship, publication
+or asset movement still needs explicit admission and repeat safety. A local
+journal alone does not make effects safe across independent workers. Recovery
+workers follow the same authority, concurrency and replacement rules as other
+workers.
+
+For each proposed scheduler, leader, queue or controller, name the correctness
+invariant or resource constraint it protects, scope its decision authority to
+that requirement, and define failure, stale-participant and recovery behavior.
+State the evidence, access and communication assumptions needed for progress,
+and bound retries and speculative work. Host lifecycle supervision can launch,
+stop and clean up local actors without becoming the application's authority
+over distributed work.
+
+Apply this default within the actual protocol and runtime contracts. A house
+role's required signer or private custody can limit replacement; document that
+dependency and its recovery path. Do not infer additional signing authority or
+multi-writer support from the architectural preference, or remove required
+coordination without preserving the invariant it protects.
 
 ## 1. The dApp is an engine; every interface is a client
 
@@ -74,8 +111,9 @@ flowchart TB
 indexer and the verifier cannot disagree. The whole dApp can be exercised
 without a browser, and bots that play through the same path as people keep
 that path under constant test. Interfaces can be added or replaced without
-touching the protocol. On XL1, [dapp-kit](SKILL.md)
-is the supported way to build the engine as a headless runtime.
+touching the protocol. If adopting dapp-kit (Layer 6):
+[xl1-dapp-kit](../xl1-dapp-kit/SKILL.md) is the supported way to build the
+engine as a headless runtime on XL1.
 
 **Practices.**
 
@@ -88,11 +126,13 @@ is the supported way to build the engine as a headless runtime.
   in Node, in the browser, on serverless targets and under test.
 - Make signing a port that signs and does not broadcast. The engine prepares an
   action; a wallet, a CLI key or a bot key signs it. Keys never live in the
-  interface layer.
+  interface layer. `@xyo-network/dapp-kit-wallet` is one optional
+  implementation: account-bound, sign-only sessions that never derive keys,
+  publish bodies or broadcast.
 - Journal each signed submission before broadcasting it, and resume from the
   journal without re-signing. Retry safety belongs to the engine, not to a UI.
-- Expose typed commands, queries and status (dapp-kit application ports), not a
-  bespoke REST API that quietly becomes the protocol.
+- Expose typed commands, queries and status (on dapp-kit, application ports),
+  not a bespoke REST API that quietly becomes the protocol.
 - Interfaces present; the engine decides. A UI may format a phase, a score or
   an eligibility, but it never computes one, and no device- or
   viewport-specific branch changes behavior.
@@ -351,7 +391,7 @@ options combine:
    becomes a provable, attributable fault.
 4. **Route it on chain.** Each action carries a dust transfer to an address
    derived from its object's hash
-   ([Destination as Protocol](../xl1-patterns/chain-data-indexing-protocol.md#destination-as-protocol--a-native-xl1-pattern)),
+   ([Destination as Protocol](chain-data-indexing-protocol.md#destination-as-protocol--a-native-xl1-pattern)),
    and the protocol makes that transfer a validity condition. Address-scoped
    history then returns exactly the object's transactions, at a cost that
    follows the object's activity, and names the object on chain even when a
@@ -441,6 +481,17 @@ Ask these of any new XL1 dApp design, and answer them in the design doc or compl
    your schema?
 9. Where do time and randomness come from?
 10. What does each action assume, and does it bind those assumptions?
+11. If the participant currently in charge disappears, what durable evidence
+    lets another eligible participant determine and perform the next valid
+    action? Which signer, custody or access dependencies limit that recovery?
+12. When workers race or restart around an effect, what prevents duplicate or
+    stale effects at the effect boundary, and what repairs missed wake hints?
+13. Which named invariant or resource constraint requires each coordination
+    mechanism, what decisions does it control, and how does progress resume
+    after its failure or a partition?
+14. Under what availability and communication assumptions does reconciliation
+    make progress, including repair work, and what bounds retries and
+    speculative activity?
 
 ## Lessons from practice
 
