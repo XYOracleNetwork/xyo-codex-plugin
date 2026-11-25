@@ -2,7 +2,7 @@
 name: xl1-patterns
 description: Prescriptive design patterns for XL1 dApps. Covers multi-party dApp architecture principles, browser UX, wallet connection and permission requests, chain data indexing, commit-reveal schemes, in-page datalakes, prediction markets, atomic exchange (multi-party escrow), inscription substrates, fungible tokens, Statement Graph relationship claims, and Event Kit authenticated wake delivery. Activates when designing or reviewing a multi-party XL1 dApp's architecture, or when building application-level features on XL1 that require structured data access, multi-party fairness, atomic asset exchange, client-side chain queries, wallet permissions, ownable artifacts, token protocols, signed relationship graphs, wallet-JWT wakes, or dApp UI conventions. (Testing, headless verification, and the dApp Definition of Done live in the xl1-testing skill. Headless application contracts live in xl1-dapp-kit.)
 metadata:
-  version: 1.1.44 # x-release-please-version
+  version: 1.1.45 # x-release-please-version
   layer: 5
 ---
 
@@ -44,7 +44,7 @@ Read when a dApp needs to request permissions from the XL1 browser wallet beyond
 The first pattern in the layer to follow the protocol/client/service split. Read the protocol file first; then the role file matching what you're building.
 
 #### [Chain Data Indexing — Protocol](chain-data-indexing-protocol.md)
-Conceptual rules for retrieving, filtering, and watching application-specific chain data — schemas, anchoring choices (Path A/B/C), `Destination as Protocol` (sentinel addresses), the four scan strategies, and finalized-vs-latest semantics. Environment-agnostic; both clients and services rely on it.
+Conceptual rules for retrieving, filtering, and watching application-specific chain data — schemas, anchoring choices (Path A/B/C), `Destination as Protocol` (sentinel addresses), schema lookup through the published payloads index on Mainnet and Sequence (in place of a block walk), the four scan strategies, and finalized-vs-latest semantics. Environment-agnostic; both clients and services rely on it.
 
 #### [Chain Data Indexing — Client](chain-data-indexing-client.md)
 Browser-side reads — but **only for ephemeral, single-user, trivial cases**. A `useChainData` hook recipe (your own code, not an SDK export) for polled reads, capability detection in components, and a sharp boundary on what does and does not belong in the browser. Anything multi-user, durable, or reorg-sensitive needs the service file instead.
